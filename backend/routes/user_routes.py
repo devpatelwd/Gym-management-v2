@@ -41,6 +41,7 @@ def register(new_user : UserData , db = Depends(get_db)):
         db.commit()
         db.refresh(table)
 
+        print("About to send email")
         send_otp_email(table.email , table.otp)
 
         return {"message" : "Success"}

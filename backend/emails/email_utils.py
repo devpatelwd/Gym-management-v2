@@ -7,7 +7,8 @@ load_dotenv()
 def send_otp_email(to_email , otp):
     sender = os.getenv("EMAIL")
     password = os.getenv("EMAIL_PASSWORD")
-
+    print(f"Sending email to {to_email} from {sender}")
+    print(f"Password exists: {password is not None}")
 
     subject = "Your OTP - Kailash Gym"
 
@@ -15,8 +16,8 @@ def send_otp_email(to_email , otp):
 
     message = f"{subject} \n\n {body}"
 
-    with smtplib.SMTP_SSL("smtp.gmail.com" , 587) as server:
-        server.starttls()
+    with smtplib.SMTP_SSL("smtp.gmail.com" , 465) as server:
+        
         server.login(sender , password)
         server.sendmail(sender , to_email , message)
         
