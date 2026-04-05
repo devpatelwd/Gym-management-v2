@@ -15,7 +15,8 @@ def send_otp_email(to_email , otp):
 
     message = f"{subject} \n\n {body}"
 
-    with smtplib.SMTP_SSL("smtp.gmail.com" , 465) as server:
+    with smtplib.SMTP_SSL("smtp.gmail.com" , 587) as server:
+        server.starttls()
         server.login(sender , password)
         server.sendmail(sender , to_email , message)
         
