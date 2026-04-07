@@ -34,6 +34,16 @@ export default function Navbar() {
           <button className="btn btn-primary" onClick={() => navigate("/register")}>
             Register
           </button>
+          <button
+            onClick={() => navigate("/admin-login")}
+            style={{
+              opacity: 0.05,
+              fontSize: "8px",
+              padding: "0px 3px"
+            }}
+          >
+            asjcnajsn
+          </button>
         </div>
       )}
     </nav>
