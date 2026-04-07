@@ -28,7 +28,8 @@ def register(new_user : UserData , db = Depends(get_db)):
     user_exist = db.query(Users).filter(Users.email == new_user.email).first()
 
     if user_exist:
-        raise HTTPException(status_code=409 , detail="User already exists")
+        if user_exist.verified:
+            raise HTTPException(status_code=409 , detail="User already exists")
     
     else:
         table = Users(name = new_user.name , email = new_user.email , phone_no = new_user.phone)
@@ -39,7 +40,7 @@ def register(new_user : UserData , db = Depends(get_db)):
         table.otp = random.randint(100000 , 999999)
         table.otp_expiry = datetime.now() + timedelta(minutes=10)
         db.commit()
-        db.refresh(table)
+        
 
         print("About to send email")
         send_otp_email(table.email , table.otp)
