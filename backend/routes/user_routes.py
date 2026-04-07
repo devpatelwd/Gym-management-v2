@@ -43,6 +43,8 @@ def register(new_user : UserData , db = Depends(get_db)):
         
 
         print("About to send email")
+        print("user exist:", user_exist)
+        print("verified:", user_exist.verified if user_exist else None)
         send_otp_email(table.email , table.otp)
 
         return {"message" : "Success"}
