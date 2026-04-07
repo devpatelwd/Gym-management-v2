@@ -12,9 +12,9 @@ def send_otp_email(to_email, otp):
 
     headers = {
         "accept": "application/json",
-        "api-key": api_key,
+        "api-key": os.getenv("BREVO_API_KEY"),
         "content-type": "application/json"
-    }
+}
 
     payload = {
         "sender": {
