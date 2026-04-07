@@ -1,30 +1,35 @@
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-import smtplib
 import os
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
 def send_otp_email(to_email, otp):
+    api_key = os.getenv("BREVO_API_KEY")
     sender = os.getenv("EMAIL")
-    login = os.getenv("BREVO_LOGIN")
-    password = os.getenv("BREVO_PASSWORD")
-    
-    subject = "Your OTP - Kailash Gym"
-    body = f"Your OTP is {otp}. Valid for 10 minutes."
-  
-    msj = MIMEMultipart()
-    msj["From"] = sender
-    msj["To"] = to_email
-    msj["Subject"] = subject
 
-    msj.attach(MIMEText(body , "plain"))
-    
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    headers = {
+        "accept": "application/json",
+        "api-key": api_key,
+        "content-type": "application/json"
+    }
+
+    payload = {
+        "sender": {
+            "name": "Kailash Gym",
+            "email": sender
+        },
+        "to": [
+            {"email": to_email}
+        ],
+        "subject": "Your OTP - Kailash Gym",
+        "htmlContent": f"<p>Your OTP is <b>{otp}</b>. Valid for 10 minutes.</p>"
+    }
+
     try:
-        with smtplib.SMTP_SSL("smtp-relay.brevo.com", 465) as server:
-            server.login(login, password)
-            server.sendmail(sender, [to_email], msj.as_string())
-            print("Email sent successfully!")
+        r = requests.post(url, json=payload, headers=headers)
+        print("Brevo:", r.status_code, r.text)
     except Exception as e:
-        print(f"Email error: {e}")
+        print("Email error:", e)
