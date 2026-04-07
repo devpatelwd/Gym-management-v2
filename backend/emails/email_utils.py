@@ -22,8 +22,7 @@ def send_otp_email(to_email, otp):
     msj.attach(MIMEText(body , "plain"))
     
     try:
-        with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
-            server.starttls()
+        with smtplib.SMTP_SSL("smtp-relay.brevo.com", 465) as server:
             server.login(login, password)
             server.sendmail(sender, [to_email], msj.as_string())
             print("Email sent successfully!")
