@@ -1,10 +1,10 @@
-import random
-from datetime import datetime , timedelta
-import time
+user_input = input("Enter a word")
 
-num = random.randint(100000 , 999999)
-print(num)
+def palindrome(user_input):
+    rev = ""
 
-otp_expiry = (datetime.now() + timedelta(minutes = 10))
+    for ch in user_input:
+        rev = ch + rev
 
-print(otp_expiry)
+    if rev == user_input:
+        return "Palindrome"
