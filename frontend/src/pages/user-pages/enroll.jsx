@@ -10,6 +10,7 @@ export default function Enroll() {
   const token = localStorage.getItem("token")
   const navigate = useNavigate()
   const [discountprice, setDiscountprice] = useState(null)
+  const [error , setError] = useState("")
 
   useEffect(() => {
     fetch(`${BASE_URL}/plans/`)
@@ -17,8 +18,8 @@ export default function Enroll() {
       .then((data) => setPlans(data))
   }, [])
 
-  function handleEnroll() {
-    fetch(`${BASE_URL}/user/enroll-plan/`, {
+  async function handleEnroll() {
+    const res = await fetch(`${BASE_URL}/user/enroll-plan/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -26,8 +27,21 @@ export default function Enroll() {
       },
       body: JSON.stringify({ plan_id: selected_plan, coupen_code: coupen }),
     })
-      .then((res) => res.json())
-      .then(() => navigate("/dashboard"))
+    
+
+    const data = await res.json()
+    if (data.detail === "Already Requested"){
+      setError("You Already have a pending request ")
+      return 
+    }
+
+    if (data.detail === "Already an active member"){
+      setError("You are Already an Active Member")
+      return 
+    }
+
+    navigate("/dashboard")
+  
   }
 
   function handleApplycoupen() {
@@ -46,6 +60,20 @@ export default function Enroll() {
   return (
     <div className="site-shell">
       <Navbar />
+
+      {error && (
+        <div role="alertdialog" aria-modal="true" className="modal-overlay">
+          <div className="modal-card confirm-dialog enroll-error-dialog">
+            <h3 className="confirm-title enroll-error-title">Enrollment Error</h3>
+            <p className="confirm-message enroll-error-message">{error}</p>
+            <div className="confirm-actions enroll-error-actions">
+              <button className="btn btn-primary" onClick={() => setError("")}>
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="page-shell">
         <div className="plan-grid interactive-plan-grid">
@@ -69,7 +97,7 @@ export default function Enroll() {
             onChange={(e) => setCoupen(e.target.value)}
           />
           <button className="btn btn-secondary" onClick={handleApplycoupen}>
-            Apply Coupen
+            Apply Coupon
           </button>
           <button className="btn btn-primary" onClick={handleEnroll}>
             Enroll Now

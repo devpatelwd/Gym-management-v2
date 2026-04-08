@@ -6,6 +6,8 @@ from models import Member , Plans , EnrollmentRequest , Users , Coupen
 import os
 from sqlalchemy import func
 from dependencies import get_db
+from emails.email_utils import expiry_email
+from datetime import date , timedelta
 load_dotenv()
 
 router = APIRouter()
@@ -35,7 +37,7 @@ def add_member(data : AddMembers ,  admin = Depends(get_admin) , db = Depends(ge
 
     table = Member(name = data.name , phone = data.phone , gender = data.gender , joining_date = data.joining_date ,
                     subs_end_date = data.subs_end_date , plan = data.plan , status = data.status , plan_amount = data.plan_amount , 
-                    amount_paid = data.amount_paid )
+                    amount_paid = data.amount_paid , email = data.email)
     
     db.add(table)
     db.commit()
@@ -74,6 +76,7 @@ def update_member(id : int ,data : AddMembers ,  admin = Depends(get_admin) , db
     member.status = data.status
     member.plan_amount = data.plan_amount
     member.amount_paid = data.amount_paid
+    member.email = data.email
 
     db.commit()
     db.refresh(member)
@@ -133,18 +136,37 @@ def update_req_status(id : int ,data : UpdateRequestStatus , admin = Depends(get
             coupen = db.query(Coupen).filter(Coupen.coupen_code == request.coupen_code).first()
             coupen.used_count += 1
             db.commit()
+        
 
         plan = db.query(Plans).filter(Plans.id == request.plan_id).first()
 
         new_member = db.query(Users).filter(request.email == Users.email).first()
 
-        adding_member = Member(name = new_member.name , phone = new_member.phone_no , gender = data.gender , joining_date = data.joining_date ,
-                              subs_end_date = data.subs_end_date , plan = plan.plan , status = data.status_member , plan_amount = data.plan_amount ,
-                              amount_paid = data.amount_paid)
-    
-        db.add(adding_member)
-        db.commit()
-    
+        alr_a_member = db.query(Member).filter(request.email == Member.email).first()
+
+        if alr_a_member:
+            alr_a_member.joining_date = data.joining_date
+            alr_a_member.subs_end_date = data.subs_end_date
+            alr_a_member.plan = plan.plan
+            alr_a_member.status = data.status_member
+            alr_a_member.plan_amount = data.plan_amount
+            alr_a_member.amount_paid = data.amount_paid
+
+            db.commit()
+            db.refresh(alr_a_member)
+            return {"message" : "success"}
+
+
+        else:
+            adding_member = Member(name = new_member.name , phone = new_member.phone_no , gender = data.gender , joining_date = data.joining_date ,
+                                subs_end_date = data.subs_end_date , plan = plan.plan , status = data.status_member , plan_amount = data.plan_amount ,
+                                amount_paid = data.amount_paid , email = data.email)
+        
+            db.add(adding_member)
+            db.commit()
+
+            return {"message" : "success"}
+        
     
         
     return {"message" : "Success"}
@@ -202,8 +224,19 @@ def delete_coupen(id : int , admin = Depends(get_admin) , db = Depends(get_db)):
 
     return {"message" : "success"}
 
-    
+@router.get("/admin/expiry-email")
 
+def send_expiry_email(user = Depends(get_admin) , db = Depends(get_db)):
+
+    date_to_check = (date.today() + timedelta(days=9)).strftime("%Y-%m-%d")
+
+    members = db.query(Member).filter(Member.subs_end_date == date_to_check).all()
+    
+    for member in members:
+        if member.email:
+            expiry_email(member.email , member.name , member.plan) 
+
+    return {"message" : "success"}
 
 
 

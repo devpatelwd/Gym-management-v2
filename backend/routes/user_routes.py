@@ -112,13 +112,35 @@ def login(login_details : UserLogin , db = Depends(get_db)):
 
 def enroll_plan(user_plan : EnrollRequest , current_user = Depends(get_current_user) , db = Depends(get_db)) :
 
-    table = EnrollmentRequest(email = current_user["email"] , plan_id = user_plan.plan_id , coupen_code = user_plan.coupen_code)
+    request = db.query(EnrollmentRequest).filter(EnrollmentRequest.email == current_user["email"]).first()
+    
+    if request and request.request_status == "Pending":
+        raise HTTPException(status_code=409 , detail="Already Requested")
+    
+    if request and request.request_status == "Approved":
+        request.email = current_user["email"]
+        request.plan_id = user_plan.plan_id
+        request.coupen_code = user_plan.coupen_code
+        request.request_status = "Pending"
+        db.commit()
+        db.refresh(request)
+        return {"message" : "success"}
 
+    
+    if request and request.request_status == "Rejected":
+        request.email = current_user["email"]
+        request.plan_id = user_plan.plan_id
+        request.coupen_code = user_plan.coupen_code
+        request.request_status = "Pending"
+        db.commit()
+        db.refresh(request)
+        return {"message" : "success"}
 
-    db.add(table)
-    db.commit()
-
-    return {"message" : "Success"}
+    if not request:
+        table = EnrollmentRequest(email = current_user["email"] , plan_id = user_plan.plan_id , coupen_code = user_plan.coupen_code)
+        db.add(table)
+        db.commit()
+        return {"message" : "success"}
 
 @router.post("/user/apply-coupen")
 
@@ -160,4 +182,15 @@ def get_enrollment_status(user = Depends(get_current_user) , db = Depends(get_db
     request_status = email.request_status
 
     return {"request_status" : request_status}
+
+@router.get("/user/get-plan-details") 
+
+def get_plan_detail(user = Depends(get_current_user) , db = Depends(get_db)):
+
+    member = db.query(Member).filter(Member.email == user["email"]).first()
+
+    if not member:
+        return {"plan" : None}
+    
+    return {"plan" : member.plan , "plan_amount" : member.plan_amount , "joining_date" : member.joining_date , "ending_date" : member.subs_end_date}
 

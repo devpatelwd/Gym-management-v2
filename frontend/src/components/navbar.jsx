@@ -19,6 +19,9 @@ export default function Navbar() {
 
       {token ? (
         <div className="nav-actions">
+          <button className="btn btn-secondary" onClick={() => navigate("/user-plan")}>
+            My plan
+          </button>
           <button className="btn btn-secondary" onClick={() => navigate("/dashboard")}>
             Dashboard
           </button>
@@ -35,14 +38,17 @@ export default function Navbar() {
             Register
           </button>
           <button
+            className="btn btn-ghost"
             onClick={() => navigate("/admin-login")}
             style={{
-              opacity: 0.05,
-              fontSize: "8px",
-              padding: "0px 3px"
+              opacity: 0.2,
+              fontSize: "10px",
+              padding: "4px 8px"
             }}
+            aria-label="Admin Login"
+            title="Admin Login"
           >
-            asjcnajsn
+            AL
           </button>
         </div>
       )}

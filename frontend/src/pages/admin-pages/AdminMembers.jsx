@@ -25,6 +25,7 @@ export default function AdminMembers() {
     status: "",
     plan_amount: 0,
     amount_paid: 0,
+    email: ""
   })
 
   const [selected_member, setSelected_member] = useState({
@@ -37,6 +38,7 @@ export default function AdminMembers() {
     status: "",
     plan_amount: 0,
     amount_paid: 0,
+    email: ""
   })
 
   function fetchMember() {
@@ -107,6 +109,7 @@ export default function AdminMembers() {
       status: "",
       plan_amount: 0,
       amount_paid: 0,
+      email: ""
     })
   }
 
@@ -253,8 +256,22 @@ export default function AdminMembers() {
                     onChange={(e) => setFormdata({ ...formdata, amount_paid: e.target.value })}
                   />
                 </div>
-
-                <div>
+                
+                <div className="field-group">
+                  <label className="field-label">Email</label>
+                  <input 
+                    className="field-input"
+                    value={formdata.email}
+                    onChange={(e) => setFormdata({ ...formdata , email: e.target.value})}                  
+                  />
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    className="btn border border-slate-300 bg-slate-100 text-slate-700 shadow-none"
+                    onClick={() => setShowmodal(false)}
+                  >
+                    Cancel
+                  </button>
                   <button className="btn btn-primary" onClick={() => handleAddMember()}>
                     Add
                   </button>
@@ -373,6 +390,15 @@ export default function AdminMembers() {
                   />
                 </div>
 
+                <div className="field-group">
+                  <input
+                    className="field-input"
+                    value={selected_member.email}
+                    onChange={(e) => setSelected_member({ ...selected_member, email: e.target.value})}
+                  />
+
+                </div>
+
                 <div className="flex flex-wrap gap-3">
                   <button
                     className="btn border border-slate-300 bg-slate-100 text-slate-700 shadow-none"
@@ -402,6 +428,7 @@ export default function AdminMembers() {
                   <th>Ending Date</th>
                   <th>Amount Paid</th>
                   <th>Amount Due</th>
+                  <th>Email</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -417,6 +444,7 @@ export default function AdminMembers() {
                     <td data-label="Ending Date">{member.subs_end_date}</td>
                     <td data-label="Amount Paid">{member.amount_paid}</td>
                     <td data-label="Amount Due">{member.plan_amount - member.amount_paid}</td>
+                    <td data-label="Email">{member.email}</td>
                     <td data-label="Actions" className="cell-actions">
                       <button className="btn btn-danger table-inline-action" onClick={() => setMemberToDelete(member)}>
                         Delete

@@ -36,6 +36,7 @@ class AddMembers(BaseModel):
     status : str
     plan_amount : int
     amount_paid : int
+    email : Optional[str] = None
 
 class UpdateRequestStatus(BaseModel):
     status : str 
@@ -45,6 +46,7 @@ class UpdateRequestStatus(BaseModel):
     joining_date : Optional[str] = None
     subs_end_date : Optional[str] = None
     status_member : Optional[str] = None
+    email : Optional[str] = None
 
 class UpdatePlanPrice(BaseModel):
     plan_price : int

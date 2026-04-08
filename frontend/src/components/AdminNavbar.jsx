@@ -114,11 +114,6 @@ export default function AdminNavbar() {
           </button>
         </div>
 
-        <div className="admin-sidebar-copy">
-          <p className="admin-sidebar-kicker">Admin Panel</p>
-          <p className="admin-sidebar-text">Manage members, plans, requests, and offers from one place.</p>
-        </div>
-
         <nav className="admin-sidebar-nav">
           {adminLinks.map((link) => (
             <Link

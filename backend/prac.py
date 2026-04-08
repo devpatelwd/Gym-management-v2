@@ -1,10 +1,8 @@
-user_input = input("Enter a word")
+from datetime import date , timedelta
 
-def palindrome(user_input):
-    rev = ""
 
-    for ch in user_input:
-        rev = ch + rev
 
-    if rev == user_input:
-        return "Palindrome"
+today = date.today().strftime("%Y-%m-%d")
+
+print(today)
+print(type(today))

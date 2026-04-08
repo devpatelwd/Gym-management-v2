@@ -8,6 +8,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [enrollment, setEnrollment] = useState(null)
+  const [isFetchingEnrollment, setIsFetchingEnrollment] = useState(true)
 
   useEffect(() => {
     if (!token) {
@@ -29,6 +30,7 @@ export default function Dashboard() {
     })
       .then((res) => res.json())
       .then((data) => setEnrollment(data.detail ? null : data))
+      .finally(() => setIsFetchingEnrollment(false))
   }, [])
 
   return (
@@ -40,7 +42,13 @@ export default function Dashboard() {
           <h1 className="dashboard-title">Welcome , {user?.name}</h1>
           <p className="dashboard-meta">{user?.email}</p>
 
-          {enrollment === null && (
+          {isFetchingEnrollment && (
+            <div className="empty-state">
+              <div className="empty-copy">Fetching request...</div>
+            </div>
+          )}
+
+          {!isFetchingEnrollment && enrollment === null && (
             <div className="empty-state">
               <div className="empty-copy">No Enrollment yet</div>
               <button className="btn btn-primary" onClick={() => navigate("/enroll")}>
@@ -54,8 +62,10 @@ export default function Dashboard() {
           {enrollment?.request_status === "Rejected" && (
             <div className="status-pill status-rejected">Rejected by Admin</div>
           )}
+
         </div>
       </div>
     </div>
+    
   )
 }

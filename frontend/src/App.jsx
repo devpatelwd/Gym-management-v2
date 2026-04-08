@@ -9,6 +9,7 @@ import AdminCoupen from "./pages/admin-pages/AdminCoupen"
 import AdminMembers from "./pages/admin-pages/AdminMembers"
 import AdminRequests from "./pages/admin-pages/AdminRequest"
 import AdminPlans from "./pages/admin-pages/AdminPlans"
+import UserPlan from "./pages/user-pages/UserPlan"
 
 import { BrowserRouter , Routes , Route } from "react-router-dom"
 
@@ -24,6 +25,7 @@ export default function App(){
                                 <Route path="/admin-members" element={<AdminMembers/>}/>
                                 <Route path="/admin-request" element={<AdminRequests/>}/>
                                 <Route path="/admin-plans" element={<AdminPlans/>}/>
+                                <Route path="/user-plan" element={<UserPlan/>}/>
                                 </Routes></BrowserRouter>
 
 }

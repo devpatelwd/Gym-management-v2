@@ -21,6 +21,7 @@ class Member(Base):
     plan_amount = Column(Integer)
     amount_paid = Column(Integer)
     is_active = Column(Boolean , default=True)
+    email = Column(String , nullable=True)
 
 class Users(Base):
     __tablename__ = "users"

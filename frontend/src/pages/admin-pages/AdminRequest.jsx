@@ -16,6 +16,7 @@ export default function AdminRequests() {
     plan_amount: 0,
     amount_paid: 0,
     status_member: "Paid",
+    email : ""
   })
   const [rejected, setRejected] = useState("Rejected")
 
@@ -40,7 +41,7 @@ export default function AdminRequests() {
     const endDate = new Date(approveformdata.joining_date)
     endDate.setMonth(endDate.getMonth() + request.plan.months)
     const subs_end_date = endDate.toISOString().split("T")[0]
-    setApproveformdata({ ...approveformdata, status: "Approved", subs_end_date: subs_end_date, plan_amount: price })
+    setApproveformdata({ ...approveformdata, status: "Approved", subs_end_date: subs_end_date, plan_amount: price , email: request.email })
 
     setShowRequestModel(true)
     fetchRequests()
@@ -101,13 +102,21 @@ export default function AdminRequests() {
                     className="field-input"
                     type="date"
                     value={approveformdata.joining_date}
-                    onChange={(e) => setApproveformdata({ ...approveformdata, joining_date: e.target.value })}
+                    onChange={(e) => {
+                      const newJoinDate = e.target.value
+                      const endDate = new Date(newJoinDate)
+                      endDate.setMonth(endDate.getMonth() + selected_request.plan.months)
+                      const newEndDate = endDate.toISOString().split("T")[0]                      
+                      
+                      setApproveformdata({ ...approveformdata, joining_date: newJoinDate , subs_end_date : newEndDate })}
+
+                    }
                   />
                 </div>
 
                 <div className="field-group">
                   <label className="field-label">Ending Date</label>
-                  <input className="field-input" type="date" value={approveformdata.subs_end_date} />
+                  <input className="field-input" type="date" value={approveformdata.subs_end_date} onChange={(e) => setApproveformdata({ ...approveformdata , subs_end_date: e.target.value})}/>
                 </div>
 
                 <div className="field-group">
@@ -139,7 +148,15 @@ export default function AdminRequests() {
                     onChange={(e) => setApproveformdata({ ...approveformdata, amount_paid: e.target.value })}
                   />
                 </div>
-
+                <div className="field-group">
+                  <label className="field-label">Email</label>
+                  <input 
+                    className="field-input"
+                    value={approveformdata.email}
+                    onChange={(e) => setApproveformdata({ ...approveformdata, email: e.target.value})}
+                  />
+                </div>
+                
                 <div className="flex flex-wrap gap-3">
                   <button
                     className="btn border border-slate-300 bg-slate-100 text-slate-700 shadow-none"
