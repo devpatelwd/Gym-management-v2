@@ -224,10 +224,13 @@ def delete_coupen(id : int , admin = Depends(get_admin) , db = Depends(get_db)):
 
     return {"message" : "success"}
 
-@router.get("/admin/expiry-email")
+@router.get("/admin/expiry-email/")
 
-def send_expiry_email(user = Depends(get_admin) , db = Depends(get_db)):
+def send_expiry_email(secret : str ,  db = Depends(get_db)):
 
+    if secret != os.getenv("CRON_SECRET"):
+        raise HTTPException(status_code=401 , detail= "Unauthorized")
+    
     date_to_check = (date.today() + timedelta(days=9)).strftime("%Y-%m-%d")
 
     members = db.query(Member).filter(Member.subs_end_date == date_to_check).all()
