@@ -8,6 +8,7 @@ const adminLinks = [
   { to: "/admin-plans", label: "Plans" },
   { to: "/admin-request", label: "Requests" },
   { to: "/admin-coupens", label: "Coupens" },
+  { to: "/admin-charts", label: "Charts" }
 ]
 
 export default function AdminNavbar() {

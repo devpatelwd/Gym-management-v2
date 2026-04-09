@@ -2,7 +2,6 @@ from datetime import date , timedelta
 
 
 
-today = date.today().strftime("%Y-%m-%d")
+today = date.today().strptime("%Y-%m-%d")
 
 print(today)
-print(type(today))

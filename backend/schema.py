@@ -61,3 +61,5 @@ class ApplyCoupen(BaseModel):
     coupen_code : str
     plan_id : int
 
+class ForgotPasswordRequest(BaseModel):
+    email : str

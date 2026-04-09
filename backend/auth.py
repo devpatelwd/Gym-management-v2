@@ -24,7 +24,7 @@ def verify_password(plain , hashed):
 
 def create_token(data):
     to_encode = data.copy()
-    expiry = datetime.now() + timedelta(days=3)
+    expiry = datetime.now() + timedelta(days=12)
     to_encode["exp"] = expiry
     token = jwt.encode(to_encode , os.getenv("SECRET_KEY"), algorithm="HS256")
     return token

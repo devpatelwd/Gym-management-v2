@@ -64,3 +64,34 @@ def expiry_email(to_email , name , plan):
         print("Brevo:", r.status_code, r.text)
     except Exception as e:
         print("Email error:", e)
+
+
+
+def send_otp_forgot_password(to_email , otp):
+    sender = os.getenv("EMAIL")
+
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    headers = {
+        "accept": "application/json",
+        "api-key": os.getenv("BREVO_API_KEY"),
+        "content-type": "application/json"
+}
+
+    payload = {
+        "sender": {
+            "name": "Kailash Gym",
+            "email": sender
+        },
+        "to": [
+            {"email": to_email}
+        ],
+        "subject": "Plan Expiry Email - Kailash Gym",
+        "htmlContent": f"<p>Use this OTP to Reset Password : {otp} valid for 10 mins</p>"
+    }
+
+    try:
+        r = requests.post(url, json=payload, headers=headers)
+        print("Brevo:", r.status_code, r.text)
+    except Exception as e:
+        print("Email error:", e)

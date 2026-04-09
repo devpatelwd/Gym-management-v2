@@ -2,11 +2,11 @@ from fastapi import APIRouter
 from fastapi import HTTPException , Depends
 from models import Member , Users , Coupen , EnrollmentRequest , Plans
 from dependencies import get_db
-from schema import UserData , OtpVerify , SetPassword , UserLogin , EnrollRequest , ApplyCoupen
+from schema import UserData , OtpVerify , SetPassword , UserLogin , EnrollRequest , ApplyCoupen , ForgotPasswordRequest
 from datetime import datetime , timedelta
 import random
 from auth import hashed_password , verify_password , create_token , get_current_user
-from emails.email_utils import send_otp_email
+from emails.email_utils import send_otp_email , send_otp_forgot_password
 
 router = APIRouter()
 
@@ -193,4 +193,30 @@ def get_plan_detail(user = Depends(get_current_user) , db = Depends(get_db)):
         return {"plan" : None}
     
     return {"plan" : member.plan , "plan_amount" : member.plan_amount , "joining_date" : member.joining_date , "ending_date" : member.subs_end_date}
+
+@router.post("/user/forgot-password")
+
+def forgot_password(otp : ForgotPasswordRequest , db = Depends(get_db)):
+
+    member = db.query(Users).filter(Users.email == otp.email).first()
+
+    if not member:
+        raise HTTPException(status_code=404 , detail="No User Found")
+    
+
+    member.otp = random.randint(100000 , 999999)
+    member.otp_expiry = datetime.now() + timedelta(minutes=10)
+
+    db.commit()
+
+    send_otp_forgot_password(otp.email , member.otp )
+
+
+    return {"message" : "OTP sent"}
+
+    
+    
+    
+
+    
 

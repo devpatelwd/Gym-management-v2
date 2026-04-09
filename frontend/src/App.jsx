@@ -10,6 +10,7 @@ import AdminMembers from "./pages/admin-pages/AdminMembers"
 import AdminRequests from "./pages/admin-pages/AdminRequest"
 import AdminPlans from "./pages/admin-pages/AdminPlans"
 import UserPlan from "./pages/user-pages/UserPlan"
+import AdminCharts from "./pages/admin-pages/AdminCharts"
 
 import { BrowserRouter , Routes , Route } from "react-router-dom"
 
@@ -19,13 +20,14 @@ export default function App(){
                                 <Route path="/register" element={<Register/>}/>
                                 <Route path="/dashboard" element={<Dashboard/>}/>
                                 <Route path="/enroll" element={<Enroll/>}/>
+                                <Route path="/user-plan" element={<UserPlan/>}/>
                                 <Route path="/admin-login" element={<AdminLogin/>}/>
                                 <Route path="/admin-dashboard" element={<AdminDashboard/>}/>
                                 <Route path="/admin-coupens" element={<AdminCoupen/>}/>
                                 <Route path="/admin-members" element={<AdminMembers/>}/>
                                 <Route path="/admin-request" element={<AdminRequests/>}/>
                                 <Route path="/admin-plans" element={<AdminPlans/>}/>
-                                <Route path="/user-plan" element={<UserPlan/>}/>
+                                <Route path="/admin-charts" element={<AdminCharts/>}/>
                                 </Routes></BrowserRouter>
 
 }

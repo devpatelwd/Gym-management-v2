@@ -7,7 +7,7 @@ import os
 from sqlalchemy import func
 from dependencies import get_db
 from emails.email_utils import expiry_email
-from datetime import date , timedelta
+from datetime import date , timedelta , datetime
 load_dotenv()
 
 router = APIRouter()
@@ -242,5 +242,35 @@ def send_expiry_email(secret : str ,  db = Depends(get_db)):
     return {"message" : "success"}
 
 
+@router.get("/admin/get-chart-stats")
 
+def get_chart_stats(joiningdate : date , endingdate : date , admin = Depends(get_admin) , db = Depends(get_db)):
+
+    joiningdate = joiningdate.strftime("%Y-%m-%d")
+    endingdate = endingdate.strftime("%Y-%m-%d")
+
+    members = db.query(Member).filter(Member.joining_date.between(joiningdate , endingdate)).all()
+
+    member_dict = {}
+
+    for member in members:
+        joining_date = member.joining_date
+
+        joining_date_obj = datetime.strptime(joining_date , "%Y-%m-%d")
+
+        month_date = joining_date_obj.strftime("%B-%Y")
+
+        if month_date not in member_dict:
+            member_dict[month_date] = {
+                "members" : 1,
+                "revenue" : member.amount_paid,
+                "due" : member.plan_amount - member.amount_paid
+            }
+        
+        else:
+           member_dict[month_date]["members"] += 1
+           member_dict[month_date]["revenue"] += member.amount_paid
+           member_dict[month_date]["due"] += (member.plan_amount - member.amount_paid)
+        
+    return member_dict
 
