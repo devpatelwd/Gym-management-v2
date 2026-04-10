@@ -123,6 +123,10 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+}
+
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
@@ -407,6 +411,18 @@ select:focus-visible {
   border-color: rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
+}
+
+.btn:disabled {
+  opacity: 0.62;
+  transform: none;
+  box-shadow: none;
+  filter: saturate(0.75);
+}
+
+.btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .user-plan-page {

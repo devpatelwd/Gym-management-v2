@@ -3,6 +3,7 @@ import AdminNavbar from "../../components/AdminNavbar"
 import ConfirmDialog from "../../components/ConfirmDialog"
 import { BASE_URL } from "../../config"
 import { useNavigate } from "react-router-dom"
+import useActionLock from "../../hooks/useActionLock"
 
 export default function AdminMembers() {
   const [members, setMembers] = useState([])
@@ -17,6 +18,7 @@ export default function AdminMembers() {
   const [showUnpaidOnly, setShowUnpaidOnly] = useState(false)
   const [showDueOnly, setShowDueOnly] = useState(false)
   const [showEndingSoonOnly, setShowEndingSoonOnly] = useState(false)
+  const { isLocked, runLocked } = useActionLock()
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -97,19 +99,24 @@ export default function AdminMembers() {
     email: ""
   })
 
-  function fetchMember() {
-    fetch(`${BASE_URL}/plans`)
-      .then((res) => res.json())
-      .then((data) => setPlans(data))
+  async function fetchMember() {
+    const [plansRes, membersRes] = await Promise.all([
+      fetch(`${BASE_URL}/plans`),
+      fetch(`${BASE_URL}/admin/members`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+    ])
 
-    fetch(`${BASE_URL}/admin/members`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => setMembers(data))
+    const [plansData, membersData] = await Promise.all([
+      plansRes.json(),
+      membersRes.json(),
+    ])
+
+    setPlans(plansData)
+    setMembers(membersData)
   }
 
   useEffect(() => {
@@ -178,7 +185,7 @@ export default function AdminMembers() {
       body: JSON.stringify(formdata),
     })
 
-    fetchMember()
+    await fetchMember()
     setShowmodal(false)
     setFormdata(getDefaultFormData())
     setActionMessage({ text: "Member added successfully", type: "success" })
@@ -194,7 +201,7 @@ export default function AdminMembers() {
       body: JSON.stringify(selected_member),
     })
 
-    fetchMember()
+    await fetchMember()
     setShoweditmodal(false)
     setActionMessage({ text: "Member updated successfully", type: "success" })
   }
@@ -213,8 +220,10 @@ export default function AdminMembers() {
         message={`This will permanently remove ${memberToDelete?.name ?? "this member"} from the records.`}
         confirmLabel="Delete Member"
         cancelLabel="Keep Member"
-        onConfirm={handleDelete}
+        onConfirm={() => runLocked("deleteMember", handleDelete)}
         onCancel={() => setMemberToDelete(null)}
+        confirmDisabled={isLocked("deleteMember")}
+        cancelDisabled={isLocked("deleteMember")}
       />
 
       <div className="page-shell">
@@ -378,10 +387,15 @@ export default function AdminMembers() {
                   <button
                     className="btn border border-slate-300 bg-slate-100 text-slate-700 shadow-none"
                     onClick={() => setShowmodal(false)}
+                    disabled={isLocked("addMember")}
                   >
                     Cancel
                   </button>
-                  <button className="btn btn-primary" onClick={() => handleAddMember()}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => runLocked("addMember", handleAddMember)}
+                    disabled={isLocked("addMember")}
+                  >
                     Add
                   </button>
                 </div>
@@ -513,10 +527,15 @@ export default function AdminMembers() {
                   <button
                     className="btn border border-slate-300 bg-slate-100 text-slate-700 shadow-none"
                     onClick={() => setShoweditmodal(false)}
+                    disabled={isLocked("updateMember")}
                   >
                     Close
                   </button>
-                  <button className="btn btn-secondary" onClick={() => handleUpdateMember()}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => runLocked("updateMember", handleUpdateMember)}
+                    disabled={isLocked("updateMember")}
+                  >
                     Update
                   </button>
                 </div>

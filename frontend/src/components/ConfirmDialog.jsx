@@ -4,6 +4,8 @@ export default function ConfirmDialog({
   message,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
+  confirmDisabled = false,
+  cancelDisabled = false,
   onConfirm,
   onCancel,
 }) {
@@ -19,10 +21,10 @@ export default function ConfirmDialog({
         <p className="confirm-message">{message}</p>
 
         <div className="confirm-actions">
-          <button className="btn confirm-cancel" onClick={onCancel}>
+          <button className="btn confirm-cancel" onClick={onCancel} disabled={cancelDisabled}>
             {cancelLabel}
           </button>
-          <button className="btn btn-danger" onClick={onConfirm}>
+          <button className="btn btn-danger" onClick={onConfirm} disabled={confirmDisabled}>
             {confirmLabel}
           </button>
         </div>

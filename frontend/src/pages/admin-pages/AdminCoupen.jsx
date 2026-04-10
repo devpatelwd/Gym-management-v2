@@ -3,6 +3,7 @@ import AdminNavbar from "../../components/AdminNavbar"
 import ConfirmDialog from "../../components/ConfirmDialog"
 import { BASE_URL } from "../../config"
 import { useNavigate } from "react-router-dom"
+import useActionLock from "../../hooks/useActionLock"
 
 export default function AdminCoupen() {
   const [coupens, setCoupens] = useState([])
@@ -16,7 +17,7 @@ export default function AdminCoupen() {
     discount_percentage: 0,
     total_uses: 0,
   })
-  const [loading, setLoading] = useState(false)
+  const { isLocked, runLocked } = useActionLock()
 
   useEffect(() => {
     if (!token) {
@@ -46,7 +47,6 @@ export default function AdminCoupen() {
   }
 
   async function handleAddCoupen() {
-    setLoading(true)
     await fetch(`${BASE_URL}/admin/add-coupens`, {
       method: "POST",
       headers: {
@@ -56,9 +56,8 @@ export default function AdminCoupen() {
       body: JSON.stringify(coupendata),
     })
 
-    fetchCoupens()
+    await fetchCoupens()
     setShowCoupenModel(false)
-    setLoading(false)
   }
 
   async function handleDeleteCoupen() {
@@ -74,7 +73,7 @@ export default function AdminCoupen() {
       },
     })
 
-    fetchCoupens()
+    await fetchCoupens()
     setCoupenToDelete(null)
   }
 
@@ -87,8 +86,10 @@ export default function AdminCoupen() {
         message={`This will permanently remove ${coupenToDelete?.coupen_code ?? "this coupen"} from the system.`}
         confirmLabel="Delete Coupen"
         cancelLabel="Keep Coupen"
-        onConfirm={handleDeleteCoupen}
+        onConfirm={() => runLocked("deleteCoupen", handleDeleteCoupen)}
         onCancel={() => setCoupenToDelete(null)}
+        confirmDisabled={isLocked("deleteCoupen")}
+        cancelDisabled={isLocked("deleteCoupen")}
       />
 
       <div className="page-shell">
@@ -142,10 +143,15 @@ export default function AdminCoupen() {
                   <button
                     className="btn border border-slate-300 bg-slate-100 text-slate-700 shadow-none"
                     onClick={() => setShowCoupenModel(false)}
+                    disabled={isLocked("addCoupen")}
                   >
                     Close
                   </button>
-                  <button className="btn btn-primary" onClick={() => handleAddCoupen()} disabled={loading}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => runLocked("addCoupen", handleAddCoupen)}
+                    disabled={isLocked("addCoupen")}
+                  >
                     Add
                   </button>
                 </div>

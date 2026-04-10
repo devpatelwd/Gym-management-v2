@@ -2,11 +2,13 @@ import { useState } from "react"
 import AdminNavbar from "../../components/AdminNavbar"
 import { useNavigate } from "react-router-dom"
 import { BASE_URL } from "../../config"
+import useActionLock from "../../hooks/useActionLock"
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const navigate = useNavigate()
+  const { isLocked, runLocked } = useActionLock()
 
   async function handleAdminLogin() {
     const res = await fetch(`${BASE_URL}/admin/login/`, {
@@ -42,7 +44,11 @@ export default function AdminLogin() {
           </div>
 
           <div className="auth-actions">
-            <button className="btn btn-primary" onClick={handleAdminLogin}>
+            <button
+              className="btn btn-primary"
+              onClick={() => runLocked("adminLogin", handleAdminLogin)}
+              disabled={isLocked("adminLogin")}
+            >
               Login
             </button>
           </div>

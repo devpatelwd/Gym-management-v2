@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react"
 import AdminNavbar from "../../components/AdminNavbar"
 import { BASE_URL } from "../../config"
+import useActionLock from "../../hooks/useActionLock"
 
 export default function AdminRequests() {
   const [requests, setRequests] = useState([])
   const token = localStorage.getItem("token")
   const [showrequestmodel, setShowRequestModel] = useState(false)
   const [selected_request, setSelected_request] = useState({})
-  const [loading, setLoading] = useState(false)
   const [approveformdata, setApproveformdata] = useState({
     status: "",
     gender: "Male",
@@ -19,6 +19,7 @@ export default function AdminRequests() {
     email : ""
   })
   const [rejected, setRejected] = useState("Rejected")
+  const { isLocked, runLocked } = useActionLock()
 
   useEffect(() => {
     fetchRequests()
@@ -48,7 +49,6 @@ export default function AdminRequests() {
   }
 
   async function handleApproveSubmit(id) {
-    setLoading(true)
     await fetch(`${BASE_URL}/admin/update-req-status/${id}`, {
       method: "POST",
       headers: {
@@ -59,8 +59,7 @@ export default function AdminRequests() {
     })
 
     setShowRequestModel(false)
-    fetchRequests()
-    setLoading(false)
+    await fetchRequests()
   }
 
   async function handleRejectBtn(id) {
@@ -72,7 +71,7 @@ export default function AdminRequests() {
       },
       body: JSON.stringify({ status: rejected }),
     })
-    fetchRequests()
+    await fetchRequests()
   }
 
   return (
@@ -161,10 +160,15 @@ export default function AdminRequests() {
                   <button
                     className="btn border border-slate-300 bg-slate-100 text-slate-700 shadow-none"
                     onClick={() => setShowRequestModel(false)}
+                    disabled={isLocked("approveRequest")}
                   >
                     Cancel
                   </button>
-                  <button className="btn btn-primary" onClick={() => handleApproveSubmit(selected_request.id)} disabled={loading}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => runLocked("approveRequest", () => handleApproveSubmit(selected_request.id))}
+                    disabled={isLocked("approveRequest")}
+                  >
                     Approve
                   </button>
                 </div>
@@ -200,7 +204,11 @@ export default function AdminRequests() {
                       >
                         Approve
                       </button>
-                      <button className="btn btn-danger table-inline-action" onClick={() => handleRejectBtn(request.id)}>
+                      <button
+                        className="btn btn-danger table-inline-action"
+                        onClick={() => runLocked(`reject:${request.id}`, () => handleRejectBtn(request.id))}
+                        disabled={isLocked(`reject:${request.id}`)}
+                      >
                         Reject
                       </button>
                     </td>

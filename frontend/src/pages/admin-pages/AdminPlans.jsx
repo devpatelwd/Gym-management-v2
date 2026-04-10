@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import AdminNavbar from "../../components/AdminNavbar"
 import { BASE_URL } from "../../config"
 import { useNavigate } from "react-router-dom"
+import useActionLock from "../../hooks/useActionLock"
 
 export default function AdminPlans() {
   const [plans, setPlans] = useState([])
@@ -12,6 +13,7 @@ export default function AdminPlans() {
   const [showmodal, setShowmodal] = useState(false)
   const token = localStorage.getItem("token")
   const navigate = useNavigate()
+  const { isLocked, runLocked } = useActionLock()
 
   useEffect(() => {
     if (!token) {
@@ -38,18 +40,19 @@ export default function AdminPlans() {
     })
 
     setShowmodal(false)
-    fetchPlans()
+    await fetchPlans()
   }
 
-  function fetchPlans() {
-    fetch(`${BASE_URL}/plans/`, {
+  async function fetchPlans() {
+    const res = await fetch(`${BASE_URL}/plans/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
     })
-      .then((res) => res.json())
-      .then((data) => setPlans(data))
+
+    const data = await res.json()
+    setPlans(data)
   }
 
   return (
@@ -95,10 +98,15 @@ export default function AdminPlans() {
                   <button
                     className="btn border border-slate-300 bg-slate-100 text-slate-700 shadow-none"
                     onClick={() => setShowmodal(false)}
+                    disabled={isLocked("savePlanPrice")}
                   >
                     Close
                   </button>
-                  <button className="btn btn-primary" onClick={() => handleSaveModal(selectedplan.plan_id)}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => runLocked("savePlanPrice", () => handleSaveModal(selectedplan.plan_id))}
+                    disabled={isLocked("savePlanPrice")}
+                  >
                     Save
                   </button>
                 </div>

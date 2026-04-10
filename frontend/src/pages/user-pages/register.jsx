@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { BASE_URL } from "../../config"
 import Navbar from "../../components/navbar"
+import useActionLock from "../../hooks/useActionLock"
 
 export default function Register() {
   const [step, setStep] = useState(1)
@@ -12,6 +13,7 @@ export default function Register() {
   const [password, setPassword] = useState("")
   const navigate = useNavigate()
   const [error, setError] = useState("")
+  const { isLocked, runLocked } = useActionLock()
 
   async function getResponseData(res) {
     const data = await res.json().catch(() => ({}))
@@ -126,7 +128,11 @@ export default function Register() {
             </div>
 
             <div className="auth-actions">
-              <button className="btn btn-primary" onClick={handleRegister}>
+              <button
+                className="btn btn-primary"
+                onClick={() => runLocked("registerOtp", handleRegister)}
+                disabled={isLocked("registerOtp")}
+              >
                 Get OTP
               </button>
             </div>
@@ -144,7 +150,11 @@ export default function Register() {
             </div>
 
             <div className="auth-actions">
-              <button className="btn btn-primary" onClick={handleVerifyOtp}>
+              <button
+                className="btn btn-primary"
+                onClick={() => runLocked("verifyOtp", handleVerifyOtp)}
+                disabled={isLocked("verifyOtp")}
+              >
                 Verify OTP
               </button>
             </div>
@@ -162,7 +172,11 @@ export default function Register() {
             </div>
 
             <div className="auth-actions">
-              <button className="btn btn-primary" onClick={handleSetPassword}>
+              <button
+                className="btn btn-primary"
+                onClick={() => runLocked("setPassword", handleSetPassword)}
+                disabled={isLocked("setPassword")}
+              >
                 Set Password
               </button>
             </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import Navbar from "../../components/navbar"
 import { useNavigate } from "react-router-dom"
 import { BASE_URL } from "../../config"
+import useActionLock from "../../hooks/useActionLock"
 
 export default function Enroll() {
   const [plans, setPlans] = useState([])
@@ -11,6 +12,7 @@ export default function Enroll() {
   const navigate = useNavigate()
   const [discountprice, setDiscountprice] = useState(null)
   const [error , setError] = useState("")
+  const { isLocked, runLocked } = useActionLock()
 
   useEffect(() => {
     fetch(`${BASE_URL}/plans/`)
@@ -44,8 +46,8 @@ export default function Enroll() {
   
   }
 
-  function handleApplycoupen() {
-    fetch(`${BASE_URL}/user/apply-coupen`, {
+  async function handleApplycoupen() {
+    const res = await fetch(`${BASE_URL}/user/apply-coupen`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -53,8 +55,9 @@ export default function Enroll() {
       },
       body: JSON.stringify({ coupen, selected_plan }),
     })
-      .then((res) => res.json())
-      .then((data) => setDiscountprice(data.discounted_price))
+
+    const data = await res.json()
+    setDiscountprice(data.discounted_price)
   }
 
   return (
@@ -96,10 +99,18 @@ export default function Enroll() {
             value={coupen}
             onChange={(e) => setCoupen(e.target.value)}
           />
-          <button className="btn btn-secondary" onClick={handleApplycoupen}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => runLocked("applyCoupen", handleApplycoupen)}
+            disabled={isLocked("applyCoupen")}
+          >
             Apply Coupon
           </button>
-          <button className="btn btn-primary" onClick={handleEnroll}>
+          <button
+            className="btn btn-primary"
+            onClick={() => runLocked("enrollPlan", handleEnroll)}
+            disabled={isLocked("enrollPlan")}
+          >
             Enroll Now
           </button>
         </div>

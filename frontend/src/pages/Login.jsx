@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import Navbar from "../components/navbar"
 import { BASE_URL } from "../config"
+import useActionLock from "../hooks/useActionLock"
 
 export default function Login() {
   const [email, setEmail] = useState("")
@@ -10,6 +11,7 @@ export default function Login() {
   const [step, setStep] = useState(0)
   const [otp , setOtp] = useState("")
   const [error, setError] = useState("")
+  const { isLocked, runLocked } = useActionLock()
 
   async function getResponseData(res) {
     const data = await res.json().catch(() => ({}))
@@ -163,7 +165,11 @@ export default function Login() {
             </div>
 
             <div className="auth-actions login-auth-actions">
-              <button className="btn btn-primary" onClick={handleLogin}>
+              <button
+                className="btn btn-primary"
+                onClick={() => runLocked("login", handleLogin)}
+                disabled={isLocked("login")}
+              >
                 Login
               </button>
 
@@ -186,7 +192,11 @@ export default function Login() {
             </div>
 
             <div className="auth-actions login-auth-actions">
-              <button className="btn btn-primary" onClick={() => handleForgotPassword()}>
+              <button
+                className="btn btn-primary"
+                onClick={() => runLocked("forgotPassword", handleForgotPassword)}
+                disabled={isLocked("forgotPassword")}
+              >
                 Get Otp
               </button>
             </div>
@@ -207,7 +217,11 @@ export default function Login() {
             </div>
 
             <div className="auth-actions login-auth-actions">
-              <button className="btn btn-primary" onClick={() => handleOtpVerify()}>
+              <button
+                className="btn btn-primary"
+                onClick={() => runLocked("verifyOtp", handleOtpVerify)}
+                disabled={isLocked("verifyOtp")}
+              >
                 Verify otp
               </button>
             </div>
@@ -228,7 +242,11 @@ export default function Login() {
             </div>
 
             <div className="auth-actions login-auth-actions">
-              <button className="btn btn-primary" onClick={() => handleSetPassword()}>
+              <button
+                className="btn btn-primary"
+                onClick={() => runLocked("setPassword", handleSetPassword)}
+                disabled={isLocked("setPassword")}
+              >
                 Set Password
               </button>
             </div>
