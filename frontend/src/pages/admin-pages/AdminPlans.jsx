@@ -91,7 +91,13 @@ export default function AdminPlans() {
                   />
                 </div>
 
-                <div>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    className="btn border border-slate-300 bg-slate-100 text-slate-700 shadow-none"
+                    onClick={() => setShowmodal(false)}
+                  >
+                    Close
+                  </button>
                   <button className="btn btn-primary" onClick={() => handleSaveModal(selectedplan.plan_id)}>
                     Save
                   </button>

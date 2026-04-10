@@ -138,7 +138,13 @@ export default function AdminCoupen() {
                   />
                 </div>
 
-                <div>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    className="btn border border-slate-300 bg-slate-100 text-slate-700 shadow-none"
+                    onClick={() => setShowCoupenModel(false)}
+                  >
+                    Close
+                  </button>
                   <button className="btn btn-primary" onClick={() => handleAddCoupen()} disabled={loading}>
                     Add
                   </button>

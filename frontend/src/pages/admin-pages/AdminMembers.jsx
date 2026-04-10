@@ -13,6 +13,7 @@ export default function AdminMembers() {
   const [showeditmodal, setShoweditmodal] = useState(false)
   const [memberToDelete, setMemberToDelete] = useState(null)
   const [searchfor , setSearchFor] = useState("")
+  const [actionMessage, setActionMessage] = useState(null)
   const [showUnpaidOnly, setShowUnpaidOnly] = useState(false)
   const [showDueOnly, setShowDueOnly] = useState(false)
   const [showEndingSoonOnly, setShowEndingSoonOnly] = useState(false)
@@ -41,18 +42,47 @@ export default function AdminMembers() {
     )
   })
 
-  const [formdata, setFormdata] = useState({
-    name: "",
-    phone: "",
-    gender: "",
-    joining_date: new Date().toISOString().split("T")[0],
-    subs_end_date: "",
-    plan: "",
-    status: "",
-    plan_amount: 0,
-    amount_paid: 0,
-    email: ""
-  })
+  function getDefaultJoiningDate() {
+    return new Date().toISOString().split("T")[0]
+  }
+
+  function getDefaultPlanData(joiningDate) {
+    const defaultPlan = plans.find((plan) => Number(plan.months) === 1) ?? plans[0]
+
+    if (!defaultPlan) {
+      return {
+        plan: "",
+        plan_amount: 0,
+        subs_end_date: "",
+      }
+    }
+
+    const endDate = new Date(joiningDate)
+    endDate.setMonth(endDate.getMonth() + defaultPlan.months)
+
+    return {
+      plan: defaultPlan.plan,
+      plan_amount: defaultPlan.price,
+      subs_end_date: endDate.toISOString().split("T")[0],
+    }
+  }
+
+  function getDefaultFormData() {
+    const joining_date = getDefaultJoiningDate()
+
+    return {
+      name: "",
+      phone: "",
+      gender: "Male",
+      joining_date,
+      ...getDefaultPlanData(joining_date),
+      status: "Paid",
+      amount_paid: 0,
+      email: ""
+    }
+  }
+
+  const [formdata, setFormdata] = useState(getDefaultFormData())
 
   const [selected_member, setSelected_member] = useState({
     name: "",
@@ -95,10 +125,35 @@ export default function AdminMembers() {
     fetchMember()
   }, [])
 
+  useEffect(() => {
+    if (showmodal && plans.length > 0 && !formdata.plan) {
+      setFormdata((current) => ({
+        ...current,
+        gender: current.gender || "Male",
+        status: current.status || "Paid",
+        ...getDefaultPlanData(current.joining_date || getDefaultJoiningDate()),
+      }))
+    }
+  }, [showmodal, plans, formdata.plan])
+
+  useEffect(() => {
+    if (!actionMessage) {
+      return
+    }
+
+    const timeoutId = setTimeout(() => {
+      setActionMessage(null)
+    }, 3000)
+
+    return () => clearTimeout(timeoutId)
+  }, [actionMessage])
+
   async function handleDelete() {
     if (!memberToDelete) {
       return
     }
+
+    const deletedMemberName = memberToDelete.name
 
     await fetch(`${BASE_URL}/admin/delete-member/${memberToDelete.id}`, {
       method: "DELETE",
@@ -110,6 +165,7 @@ export default function AdminMembers() {
 
     setMembers(members.filter((member) => member.id !== memberToDelete.id))
     setMemberToDelete(null)
+    setActionMessage({ text: `${deletedMemberName} deleted successfully`, type: "delete" })
   }
 
   async function handleAddMember() {
@@ -124,19 +180,8 @@ export default function AdminMembers() {
 
     fetchMember()
     setShowmodal(false)
-    setFormdata({
-      ...formdata,
-      name: "",
-      phone: "",
-      gender: "",
-      joining_date: new Date().toISOString().split("T")[0],
-      subs_end_date: "",
-      plan: "",
-      status: "",
-      plan_amount: 0,
-      amount_paid: 0,
-      email: ""
-    })
+    setFormdata(getDefaultFormData())
+    setActionMessage({ text: "Member added successfully", type: "success" })
   }
 
   async function handleUpdateMember() {
@@ -151,6 +196,7 @@ export default function AdminMembers() {
 
     fetchMember()
     setShoweditmodal(false)
+    setActionMessage({ text: "Member updated successfully", type: "success" })
   }
 
   function handleEditClick(member) {
@@ -173,10 +219,15 @@ export default function AdminMembers() {
 
       <div className="page-shell">
         <div className="toolbar">
-          <button className="btn btn-primary" onClick={() => setShowmodal(true)}>
+          <button className="btn btn-primary" onClick={() => { setFormdata(getDefaultFormData()); setShowmodal(true) }}>
             Add Member
           </button>
         </div>
+        {actionMessage && (
+          <div className={`admin-members-toast ${actionMessage.type === "delete" ? "is-delete" : "is-success"}`}>
+            {actionMessage.text}
+          </div>
+        )}
         <div className="search-panel">
           <label className="field-label search-label" htmlFor="member-search">
             Search Members
@@ -238,7 +289,7 @@ export default function AdminMembers() {
 
                 <div className="field-group">
                   <label className="field-label">Gender</label>
-                  <select className="field-select" value={formdata.status} onChange={(e) => setFormdata({ ...formdata, status: e.target.value })}>
+                  <select className="field-select" value={formdata.gender} onChange={(e) => setFormdata({ ...formdata, gender: e.target.value })}>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                   </select>
@@ -365,8 +416,8 @@ export default function AdminMembers() {
                   <label className="field-label">Gender</label>
                   <select
                     className="field-select"
-                    value={selected_member.status}
-                    onChange={(e) => setSelected_member({ ...selected_member, status: e.target.value })}
+                    value={selected_member.gender}
+                    onChange={(e) => setSelected_member({ ...selected_member, gender: e.target.value })}
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -449,6 +500,7 @@ export default function AdminMembers() {
                 </div>
 
                 <div className="field-group">
+                  <label className="field-label">Email</label>
                   <input
                     className="field-input"
                     value={selected_member.email}
