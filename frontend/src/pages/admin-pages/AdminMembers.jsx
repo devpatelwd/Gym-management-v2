@@ -13,7 +13,33 @@ export default function AdminMembers() {
   const [showeditmodal, setShoweditmodal] = useState(false)
   const [memberToDelete, setMemberToDelete] = useState(null)
   const [searchfor , setSearchFor] = useState("")
-  const filtered_member = members.filter(member => member.name.toLowerCase().includes(searchfor.toLowerCase()))
+  const [showUnpaidOnly, setShowUnpaidOnly] = useState(false)
+  const [showDueOnly, setShowDueOnly] = useState(false)
+  const [showEndingSoonOnly, setShowEndingSoonOnly] = useState(false)
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const tenDaysFromToday = new Date(today)
+  tenDaysFromToday.setDate(tenDaysFromToday.getDate() + 10)
+
+  const filtered_member = members.filter((member) => {
+    const amountDue = Number(member.plan_amount) - Number(member.amount_paid)
+    const endingDate = member.subs_end_date
+      ? new Date(
+          Number(member.subs_end_date.split("-")[0]),
+          Number(member.subs_end_date.split("-")[1]) - 1,
+          Number(member.subs_end_date.split("-")[2])
+        )
+      : null
+
+    return (
+      member.name.toLowerCase().includes(searchfor.toLowerCase()) &&
+      (!showUnpaidOnly || member.status === "Unpaid") &&
+      (!showDueOnly || amountDue > 0) &&
+      (!showEndingSoonOnly || (endingDate && endingDate >= today && endingDate <= tenDaysFromToday))
+    )
+  })
 
   const [formdata, setFormdata] = useState({
     name: "",
@@ -162,6 +188,38 @@ export default function AdminMembers() {
             value={searchfor}
             onChange={(e) => setSearchFor(e.target.value)}
           ></input>
+        </div>
+
+        <div className="search-panel">
+          <label className="field-label search-label">Filter Members</label>
+          <div className="flex flex-wrap gap-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showUnpaidOnly}
+                onChange={(e) => setShowUnpaidOnly(e.target.checked)}
+              />
+              <span>Fees Unpaid Only</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showDueOnly}
+                onChange={(e) => setShowDueOnly(e.target.checked)}
+              />
+              <span>Due Amount &gt; 0</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showEndingSoonOnly}
+                onChange={(e) => setShowEndingSoonOnly(e.target.checked)}
+              />
+              <span>Ending Within 10 Days</span>
+            </label>
+          </div>
         </div>
 
         {showmodal && (
