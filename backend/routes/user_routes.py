@@ -10,6 +10,14 @@ from emails.email_utils import send_otp_email , send_otp_forgot_password
 
 router = APIRouter()
 
+
+def issue_otp(user, db, mailer):
+    user.otp = random.randint(100000 , 999999)
+    user.otp_expiry = datetime.now() + timedelta(minutes=10)
+    db.commit()
+    db.refresh(user)
+    mailer(user.email , user.otp)
+
 @router.get("/")
 
 def index():
@@ -28,48 +36,47 @@ def register(new_user : UserData , db = Depends(get_db)):
     user_exist = db.query(Users).filter(Users.email == new_user.email).first()
 
     if user_exist:
-        if user_exist.verified:
+        if user_exist.verified and user_exist.password:
             raise HTTPException(status_code=409 , detail="User already exists")
-    
-    else:
-        table = Users(name = new_user.name , email = new_user.email , phone_no = new_user.phone)
-        db.add(table)
+
+        user_exist.name = new_user.name
+        user_exist.phone_no = new_user.phone
         db.commit()
-        db.refresh(table)
-
-        table.otp = random.randint(100000 , 999999)
-        table.otp_expiry = datetime.now() + timedelta(minutes=10)
-        db.commit()
-        
-
-        print("About to send email")
-        print("user exist:", user_exist)
-        print("verified:", user_exist.verified if user_exist else None)
-        send_otp_email(table.email , table.otp)
-
+        issue_otp(user_exist , db , send_otp_email)
         return {"message" : "Success"}
-    
+
+    table = Users(name = new_user.name , email = new_user.email , phone_no = new_user.phone)
+    db.add(table)
+    db.commit()
+    db.refresh(table)
+
+    issue_otp(table , db , send_otp_email)
+
+    return {"message" : "Success"}
 
 @router.post("/user/verify-otp/")
 
 def verify_otp(verify : OtpVerify , db = Depends(get_db)):
-        
-        curr_time = datetime.now()
-
         email = db.query(Users).filter(Users.email == verify.email).first()
 
         if not email:
             raise HTTPException(status_code=404 , detail="Email not found") 
+
+        if email.otp is None or email.otp_expiry is None:
+            raise HTTPException(status_code=400 , detail="No OTP request found")
         
         if verify.otp != email.otp:
             raise HTTPException(status_code= 400, detail= "Invalid OTP")
+
+        curr_time = datetime.now()
         
         if email.otp_expiry < curr_time:
             raise HTTPException(status_code=400 , detail = "OTP Expired")
         
         email.verified = True
 
-        email.otp = None
+        # Mark OTP verification as complete until the password is set.
+        email.otp = 0
         email.otp_expiry = None
         db.commit()
 
@@ -79,16 +86,24 @@ def verify_otp(verify : OtpVerify , db = Depends(get_db)):
 
 def set_password(password : SetPassword , db = Depends(get_db)):
     
-    email = db.query(Users).filter(password.email == Users.email).first()
+    email = db.query(Users).filter(Users.email == password.email).first()
 
     if not email :
         raise HTTPException(status_code=404 , detail="Email not found")
 
     if not email.verified:
         raise HTTPException(status_code=403 , detail="Detail not verified")
+
+    if email.otp != 0:
+        raise HTTPException(status_code=403 , detail="Verify OTP before setting password")
+
+    if password.password.strip() == "":
+        raise HTTPException(status_code=400 , detail="Password cannot be empty")
     
     hashed_pass = hashed_password(password.password)
     email.password = hashed_pass
+    email.otp = None
+    email.otp_expiry = None
 
     db.commit()
 
@@ -102,9 +117,12 @@ def login(login_details : UserLogin , db = Depends(get_db)):
 
      if not email:
         raise HTTPException(status_code=404 , detail="email not found")
+
+     if not email.password:
+        raise HTTPException(status_code=403 , detail="Password not set for this account")
      
      if not verify_password(login_details.password , email.password):
-        raise HTTPException(status_code=403 , detail="Invalid pasword")
+        raise HTTPException(status_code=403 , detail="Invalid password")
 
      return {"token" : create_token({"name" : email.name , "email" : email.email , "role" : "user"})}
 
