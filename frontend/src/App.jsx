@@ -12,10 +12,34 @@ import AdminPlans from "./pages/admin-pages/AdminPlans"
 import UserPlan from "./pages/user-pages/UserPlan"
 import AdminCharts from "./pages/admin-pages/AdminCharts"
 
-import { BrowserRouter , Routes , Route } from "react-router-dom"
+import { BrowserRouter , Routes , Route, Navigate } from "react-router-dom"
+
+function HomeRoute() {
+  const token = localStorage.getItem("token")
+
+  if (!token) {
+    return <Landing />
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]))
+
+    if (payload.role === "user") {
+      return <Navigate to="/dashboard" replace />
+    }
+
+    if (payload.role === "admin") {
+      return <Navigate to="/admin-dashboard" replace />
+    }
+  } catch {
+    localStorage.removeItem("token")
+  }
+
+  return <Landing />
+}
 
 export default function App(){
-  return <BrowserRouter><Routes><Route path="/" element={<Landing/>} /> 
+  return <BrowserRouter><Routes><Route path="/" element={<HomeRoute/>} /> 
                                 <Route path="/login" element={<Login/>}/>
                                 <Route path="/register" element={<Register/>}/>
                                 <Route path="/dashboard" element={<Dashboard/>}/>
