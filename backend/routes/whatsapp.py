@@ -34,17 +34,20 @@ def send_bill(data):
     time = datetime.today().time().strftime("%H-%M-%S")
     pdf = canvas.Canvas(f"{data.name}_{time}_bill.pdf")
 
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    logo_path = os.path.join(BASE_DIR, "assets", "gymlogo1.png")
+
     amount_due = data.plan_amount - data.amount_paid
 
-    pdf.drawString(x=250 , y=750 , text="Kailash Gym")
-    pdf.drawString(x=100 , y=720 , text=f"Member Name :- {data.name}")
-    pdf.drawString(x=100 , y=690 , text=f"Member Number :- {data.phone}")
-    pdf.drawString(x=100 , y=660 , text=f"Member Plan :- {data.plan}")
-    pdf.drawString(x=100 , y=630 , text=f"Joining Date :- {data.joining_date}")
-    pdf.drawString(x=100 , y=600 , text=f"Ending_Date :- {data.subs_end_date}")
-    pdf.drawString(x=100 , y=570 , text=f"Plan Amount :- {str(data.plan_amount)}")
-    pdf.drawString(x=100 , y=540 , text=f"Amount Paid :- {str(data.amount_paid)}")
-    pdf.drawString(x=100 , y=510 , text=f"Amount Due :- {str(amount_due)}")
+    pdf.drawImage(logo_path, x=230, y=700, width=100, height=150)
+    pdf.drawString(x=100 , y=670 , text=f"Member Name :- {data.name}")
+    pdf.drawString(x=100 , y=640 , text=f"Member Number :- {data.phone}")
+    pdf.drawString(x=100 , y=610 , text=f"Member Plan :- {data.plan}")
+    pdf.drawString(x=100 , y=580 , text=f"Joining Date :- {data.joining_date}")
+    pdf.drawString(x=100 , y=550 , text=f"Ending_Date :- {data.subs_end_date}")
+    pdf.drawString(x=100 , y=520 , text=f"Plan Amount :- {str(data.plan_amount)}")
+    pdf.drawString(x=100 , y=490 , text=f"Amount Paid :- {str(data.amount_paid)}")
+    pdf.drawString(x=100 , y=460 , text=f"Amount Due :- {str(amount_due)}")
 
     pdf.save()
 
