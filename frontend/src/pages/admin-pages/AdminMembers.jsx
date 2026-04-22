@@ -587,6 +587,7 @@ export default function AdminMembers() {
                         Number(member.subs_end_date.split("-")[2])
                       )
                     : null
+                  const amountDue = Number(member.plan_amount) - Number(member.amount_paid)
                   const isExpired = endingDate && endingDate < today
                   const isEndingSoon = endingDate && endingDate >= today && endingDate <= tenDaysFromToday
 
@@ -609,7 +610,16 @@ export default function AdminMembers() {
                         </span>
                       </td>
                       <td data-label="Amount Paid">{member.amount_paid}</td>
-                      <td data-label="Amount Due">{member.plan_amount - member.amount_paid}</td>
+                      <td data-label="Amount Due">
+                        <span className="admin-member-due-amount">
+                          {amountDue}
+                          {amountDue > 0 && (
+                            <span className="admin-member-due-alert" aria-hidden="true">
+                              !
+                            </span>
+                          )}
+                        </span>
+                      </td>
                       <td data-label="Email">{member.email}</td>
                       <td data-label="Actions" className="cell-actions">
                         <button className="btn btn-danger table-inline-action" onClick={() => setMemberToDelete(member)}>

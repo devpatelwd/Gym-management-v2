@@ -1626,6 +1626,39 @@ select:focus-visible {
   background: var(--danger-soft);
 }
 
+.admin-member-due-amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-member-due-alert {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #dc2626;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1;
+  transform-origin: center;
+  animation: adminMemberDuePulse 1.2s ease-in-out infinite;
+}
+
+@keyframes adminMemberDuePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.28);
+  }
+}
+
 .table-inline-action {
   min-height: 2.5rem;
   margin: 0.35rem 0;
