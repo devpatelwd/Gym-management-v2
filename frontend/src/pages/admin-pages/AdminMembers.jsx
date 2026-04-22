@@ -310,7 +310,21 @@ export default function AdminMembers() {
                     className="field-input"
                     type="date"
                     value={formdata.joining_date}
-                    onChange={(e) => setFormdata({ ...formdata, joining_date: e.target.value })}
+                    onChange={(e) => {
+                      const joining_date = e.target.value
+                      const selected_plan = plans.find((plan) => plan.plan === formdata.plan)
+
+                      if (!selected_plan) {
+                        setFormdata({ ...formdata, joining_date })
+                        return
+                      }
+
+                      const endDate = new Date(joining_date)
+                      endDate.setMonth(endDate.getMonth() + selected_plan.months)
+                      const subs_end_date = endDate.toISOString().split("T")[0]
+
+                      setFormdata({ ...formdata, joining_date, subs_end_date })
+                    }}
                   />
                 </div>
 
@@ -318,6 +332,7 @@ export default function AdminMembers() {
                   <label className="field-label">Ending Date</label>
                   <input
                     className="field-input"
+                    type="date"
                     value={formdata.subs_end_date}
                     onChange={(e) => setFormdata({ ...formdata, subs_end_date: e.target.value })}
                   />
@@ -452,6 +467,7 @@ export default function AdminMembers() {
                   <label className="field-label">Ending Date</label>
                   <input
                     className="field-input"
+                    type="date"
                     value={selected_member.subs_end_date}
                     onChange={(e) => setSelected_member({ ...selected_member, subs_end_date: e.target.value })}
                   />
@@ -563,27 +579,49 @@ export default function AdminMembers() {
               </thead>
 
               <tbody>
-                {filtered_member.map((member) => (
-                  <tr key={member.id}>
-                    <td data-label="Name">{member.name}</td>
-                    <td data-label="Phone">{member.phone}</td>
-                    <td data-label="Plan">{member.plan}</td>
-                    <td data-label="Status">{member.status}</td>
-                    <td data-label="Joining Date">{member.joining_date}</td>
-                    <td data-label="Ending Date">{member.subs_end_date}</td>
-                    <td data-label="Amount Paid">{member.amount_paid}</td>
-                    <td data-label="Amount Due">{member.plan_amount - member.amount_paid}</td>
-                    <td data-label="Email">{member.email}</td>
-                    <td data-label="Actions" className="cell-actions">
-                      <button className="btn btn-danger table-inline-action" onClick={() => setMemberToDelete(member)}>
-                        Delete
-                      </button>
-                      <button className="btn btn-secondary table-inline-action" onClick={() => handleEditClick(member)}>
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {filtered_member.map((member) => {
+                  const endingDate = member.subs_end_date
+                    ? new Date(
+                        Number(member.subs_end_date.split("-")[0]),
+                        Number(member.subs_end_date.split("-")[1]) - 1,
+                        Number(member.subs_end_date.split("-")[2])
+                      )
+                    : null
+                  const isExpired = endingDate && endingDate < today
+                  const isEndingSoon = endingDate && endingDate >= today && endingDate <= tenDaysFromToday
+
+                  return (
+                    <tr key={member.id}>
+                      <td data-label="Name">{member.name}</td>
+                      <td data-label="Phone">{member.phone}</td>
+                      <td data-label="Plan">{member.plan}</td>
+                      <td data-label="Status">
+                        <span className={`admin-member-status ${member.status === "Paid" ? "is-paid" : "is-unpaid"}`}>
+                          {member.status}
+                        </span>
+                      </td>
+                      <td data-label="Joining Date">{member.joining_date}</td>
+                      <td data-label="Ending Date">
+                        <span
+                          className={`admin-member-ending-date ${isExpired ? "is-expired" : isEndingSoon ? "is-ending-soon" : ""}`}
+                        >
+                          {member.subs_end_date}
+                        </span>
+                      </td>
+                      <td data-label="Amount Paid">{member.amount_paid}</td>
+                      <td data-label="Amount Due">{member.plan_amount - member.amount_paid}</td>
+                      <td data-label="Email">{member.email}</td>
+                      <td data-label="Actions" className="cell-actions">
+                        <button className="btn btn-danger table-inline-action" onClick={() => setMemberToDelete(member)}>
+                          Delete
+                        </button>
+                        <button className="btn btn-secondary table-inline-action" onClick={() => handleEditClick(member)}>
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from database import engine , Base
 from routes.user_routes import router as user_router
 from routes.admin_routes import router as admin_router
+from routes.whatsapp import router as whatsapp_route
 from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind = engine)
@@ -19,6 +20,8 @@ app.add_middleware(
 app.include_router(user_router)
 
 app.include_router(admin_router)
+
+app.include_router(whatsapp_route)
 
 
 

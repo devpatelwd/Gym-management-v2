@@ -1,7 +1,6 @@
-from datetime import date , timedelta
+from datetime import date , timedelta , datetime
 
 
 
-today = date.today().strptime("%Y-%m-%d")
-
+today = datetime.today().time().strftime("%H:%M:%S")
 print(today)

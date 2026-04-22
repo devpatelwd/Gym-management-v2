@@ -34,7 +34,12 @@ export default function AdminRequests() {
       },
     })
     const data = await res.json()
-    setRequests(data.all_request)
+    if (!res.ok) {
+      setRequests([])
+      return
+    }
+
+    setRequests(data.all_request ?? [])
   }
 
   function handleApproveButton(request, price) {
@@ -70,6 +75,17 @@ export default function AdminRequests() {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ status: rejected }),
+    })
+    await fetchRequests()
+  }
+
+  async function handleDeleteRequest(id) {
+    await fetch(`${BASE_URL}/admin/delete-request/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
     })
     await fetchRequests()
   }
@@ -206,10 +222,37 @@ export default function AdminRequests() {
                       </button>
                       <button
                         className="btn btn-danger table-inline-action"
+                        style={{ marginLeft: "0.9rem" }}
                         onClick={() => runLocked(`reject:${request.id}`, () => handleRejectBtn(request.id))}
                         disabled={isLocked(`reject:${request.id}`)}
                       >
                         Reject
+                      </button>
+                      <button
+                        className="btn btn-danger table-inline-action"
+                        style={{ marginLeft: "0.9rem" }}
+                        onClick={() => runLocked(`delete:${request.id}`, () => handleDeleteRequest(request.id))}
+                        disabled={isLocked(`delete:${request.id}`)}
+                        aria-label="Delete request"
+                        title="Delete request"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M3 6h18" />
+                          <path d="M8 6V4h8v2" />
+                          <path d="M19 6l-1 14H6L5 6" />
+                          <path d="M10 11v6" />
+                          <path d="M14 11v6" />
+                        </svg>
                       </button>
                     </td>
                   </tr>

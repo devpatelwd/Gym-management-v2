@@ -8,6 +8,7 @@ from sqlalchemy import func
 from dependencies import get_db
 from emails.email_utils import expiry_email
 from datetime import date , timedelta , datetime
+from routes.whatsapp import BillPdfGeneration , bill_send
 load_dotenv()
 
 router = APIRouter()
@@ -33,7 +34,7 @@ def get_members(admin = Depends(get_admin) , db = Depends(get_db)):
 
 @router.post("/admin/add-member/")
 
-def add_member(data : AddMembers ,  admin = Depends(get_admin) , db = Depends(get_db)):
+def add_member( data : AddMembers ,  admin = Depends(get_admin) , db = Depends(get_db)):
 
     table = Member(name = data.name , phone = data.phone , gender = data.gender , joining_date = data.joining_date ,
                     subs_end_date = data.subs_end_date , plan = data.plan , status = data.status , plan_amount = data.plan_amount , 
@@ -42,6 +43,10 @@ def add_member(data : AddMembers ,  admin = Depends(get_admin) , db = Depends(ge
     db.add(table)
     db.commit()
     db.refresh(table)
+
+    bill_data = BillPdfGeneration(name=data.name , phone=data.phone , plan=data.plan , joining_date=data.joining_date , subs_end_date=data.subs_end_date,
+                                  plan_amount=data.plan_amount , amount_paid=data.amount_paid )
+    bill_send(bill_data)
 
     return {"message" : "Success"}
 
@@ -81,6 +86,10 @@ def update_member(id : int ,data : AddMembers ,  admin = Depends(get_admin) , db
     db.commit()
     db.refresh(member)
 
+    bill_data = BillPdfGeneration(name=data.name , phone=data.phone , plan=data.plan , joining_date=data.joining_date , subs_end_date=data.subs_end_date,
+                                  plan_amount=data.plan_amount , amount_paid=data.amount_paid )
+    bill_send(bill_data)
+
     return {"message" : "Success"}
 
     
@@ -118,6 +127,20 @@ def get_requests(admin = Depends(get_admin) , db = Depends(get_db)):
 
     return {"all_request" : combined_data}
 
+@router.delete("/admin/delete-request/{id}")
+
+def delete_request(id : int , admin = Depends(get_admin) , db = Depends(get_db)):
+
+    request = db.query(EnrollmentRequest).filter(EnrollmentRequest.id == id).first()
+
+    if not request:
+        raise HTTPException(status_code=404 , detail="Request Not found")
+
+    db.delete(request)
+    db.commit()
+
+    return {"message" : "Success"}
+
 @router.post("/admin/update-req-status/{id}")
 
 def update_req_status(id : int ,data : UpdateRequestStatus , admin = Depends(get_admin) , db = Depends(get_db)):
@@ -154,6 +177,13 @@ def update_req_status(id : int ,data : UpdateRequestStatus , admin = Depends(get
 
             db.commit()
             db.refresh(alr_a_member)
+
+            bill_data = BillPdfGeneration(name=alr_a_member.name , phone=alr_a_member.phone , plan=alr_a_member.plan , 
+                                          joining_date=alr_a_member.joining_date , subs_end_date=alr_a_member.subs_end_date , plan_amount=alr_a_member.plan_amount ,
+                                          amount_paid=alr_a_member.amount_paid)
+            
+            bill_send(bill_data)
+
             return {"message" : "success"}
 
 
@@ -164,6 +194,12 @@ def update_req_status(id : int ,data : UpdateRequestStatus , admin = Depends(get
         
             db.add(adding_member)
             db.commit()
+
+            bill_data = BillPdfGeneration(name=new_member.name , phone=new_member.phone_no , plan=plan.plan ,
+                                          joining_date=data.joining_date , subs_end_date=data.subs_end_date , 
+                                          plan_amount=data.plan_amount , amount_paid=data.amount_paid)
+            
+            bill_send(bill_data)
 
             return {"message" : "success"}
         
